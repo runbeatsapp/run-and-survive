@@ -23,7 +23,45 @@ class GPSManager {
             noiseSpeedLimit: 12   // Ignorar si va a > 43km/h (12m/s)
         };
 
+        this.wakeLock = null;
+
         console.log("🛰️ GPS-Nativo: Sistema de rastreo inicializado.");
+        this.initWakeLockListeners();
+    }
+
+    /**
+     * Re-solicita el bloqueo si la app vuelve al primer plano.
+     */
+    initWakeLockListeners() {
+        document.addEventListener('visibilitychange', async () => {
+            if (this.isActive && this.wakeLock !== null && document.visibilityState === 'visible') {
+                await this.requestWakeLock();
+            }
+        });
+    }
+
+    /**
+     * Bloquea la pantalla para evitar que se apague (Screen Wake Lock API).
+     */
+    async requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                this.wakeLock = await navigator.wakeLock.request('screen');
+                console.log("🔒 GPS: Pantalla bloqueada. No nos detendremos.");
+            } catch (err) {
+                console.warn(`🛰️ GPS: No se pudo bloquear la pantalla: ${err.message}`);
+            }
+        }
+    }
+
+    /**
+     * Libera el bloqueo de pantalla.
+     */
+    releaseWakeLock() {
+        if (this.wakeLock) {
+            this.wakeLock.release();
+            this.wakeLock = null;
+        }
     }
 
     /**
@@ -70,6 +108,9 @@ class GPSManager {
             this.CONFIG
         );
 
+        // Bloquear pantalla para la sesión
+        await this.requestWakeLock();
+
         this.engine.logMessage("🛰️ GPS: Rastreo activo. ¡Muévete!", "success");
     }
 
@@ -83,6 +124,10 @@ class GPSManager {
         }
         
         this.isActive = false;
+        
+        // Liberar pantalla
+        this.releaseWakeLock();
+
         const finalKm = this.totalDistance / 1000;
         const totalTimeMin = (Date.now() - this.startTime) / 60000;
         
