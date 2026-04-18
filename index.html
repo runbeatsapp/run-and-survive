@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>La Buenna Running App | UI-Supervivencia</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- HUD: STATUS BARS & RESOURCES -->
+        <header id="hud">
+            <div class="status-bars">
+                <!-- Salud -->
+                <div class="status-item">
+                    <div class="status-label"><span>Salud</span><span id="val-health">100%</span></div>
+                    <div class="bar-container"><div id="bar-health" class="bar-fill bar-health" style="width: 100%;"></div></div>
+                </div>
+                <!-- Agua -->
+                <div class="status-item">
+                    <div class="status-label"><span>Agua</span><span id="val-water">80%</span></div>
+                    <div class="bar-container"><div id="bar-water" class="bar-fill bar-water" style="width: 80%;"></div></div>
+                </div>
+                <!-- Comida -->
+                <div class="status-item">
+                    <div class="status-label"><span>Comida</span><span id="val-food">80%</span></div>
+                    <div class="bar-container"><div id="bar-food" class="bar-fill bar-food" style="width: 80%;"></div></div>
+                </div>
+            </div>
+
+            <div class="resource-grid">
+                <div class="res-item">
+                    <span class="res-icon">🪵</span>
+                    <span id="res-wood" class="res-val">0</span>
+                </div>
+                <div class="res-item">
+                    <span class="res-icon">⚙️</span>
+                    <span id="res-metal" class="res-val">0</span>
+                </div>
+                <div class="res-item">
+                    <span class="res-icon">🔩</span>
+                    <span id="res-scraps" class="res-val">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN VIEWS -->
+        <main id="main-content">
+            
+            <!-- SECTION: SUPERVIVENCIA (DASHBOARD) -->
+            <section id="view-survival" class="view-section active">
+                <!-- Monitor de la Radio -->
+                <div id="radio-monitor">
+                    <div id="event-log">
+                        <!-- Mensajes de narrativa aquí -->
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="action-buttons">
+                    <button id="btn-explorar" class="btn-large explorar">
+                        <span class="label">Paso Lento</span>
+                        MODO EXPLORADOR
+                    </button>
+                    <button id="btn-huida" class="btn-large huida">
+                        <span class="label">Sprints / Huida</span>
+                        MODO HUIDA
+                    </button>
+                </div>
+
+                <!-- Datos de Carrera (Si está activa) -->
+                <div id="run-data" style="display: none; background: var(--bg-card); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                    <div style="font-size: 0.7rem; color: var(--text-med); margin-bottom: 0.5rem; text-transform: uppercase;">Sesión de Rastreo Activa</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span id="run-km" style="font-size: 2rem; font-family: var(--font-mono); font-weight: bold; color: var(--secondary);">0.00 km</span>
+                        <span id="run-time" style="font-family: var(--font-mono); color: var(--text-med);">00:00</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: MI REFUGIO (CONSTRUCCIÓN) -->
+            <section id="view-shelter" class="view-section">
+                <div class="base-viewport">
+                    <div id="pixel-art-placeholder" style="text-align: center; opacity: 0.5;">
+                        <span style="font-size: 3rem;">🏚️</span>
+                        <p style="font-size: 0.7rem; margin-top: 1rem; text-transform: uppercase;">Zona de Construcción<br>[Espacio para Pixel Art]</p>
+                    </div>
+                    <div id="base-status" style="margin-top: 1rem; width: 100%; padding: 0 1rem;"></div>
+                </div>
+            </section>
+
+            <!-- SECTION: DIARIO (ESTADÍSTICAS) -->
+            <section id="view-journal" class="view-section">
+                <h2 style="font-size: 0.8rem; text-transform: uppercase; color: var(--primary); margin-bottom: 1rem;">Historial de Incursiones</h2>
+                <div id="journal-list">
+                    <!-- Tarjetas de historial aquí -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER: NAVEGACIÓN -->
+        <footer>
+            <button class="nav-tab active" data-view="survival">
+                <i>🛡️</i>
+                <span>Supervivencia</span>
+            </button>
+            <button class="nav-tab" data-view="shelter">
+                <i>🏠</i>
+                <span>Mi Refugio</span>
+            </button>
+            <button class="nav-tab" data-view="journal">
+                <i>📖</i>
+                <span>Diario</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="narrativa.js"></script>
+    <script src="gps.js"></script>
+    <script src="running.js"></script>
+    <script src="base.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

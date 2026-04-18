@@ -1,0 +1,358 @@
+/* 
+  LA BUENNA RUNNING APP - DESIGN SYSTEM (UI-SUPERVIVENCIA)
+  Estética: Post-Apocalíptica Premium / Industrial / Terminal CRT
+*/
+
+:root {
+    /* Color Palette */
+    --bg-dark: #0a0a0c;
+    --bg-surface: #141417;
+    --bg-card: #1c1c21;
+    
+    --primary: #ff4d00;    /* Naranja Radioactivo / Warning */
+    --secondary: #00ff41;  /* Verde Terminal / Phosphor */
+    --accent: #00aaff;     /* Azul Agua / Cyber */
+    
+    --health: #ff2a2a;     /* Rojo Vitalidad */
+    --water: #00aaff;      /* Azul Hidratación */
+    --food: #ffa500;       /* Naranja Nutrición */
+    
+    --text-high: #f0f0f0;
+    --text-med: #a0a0a5;
+    --text-low: #606065;
+    
+    --border: #2a2a2f;
+    --border-glow: rgba(255, 77, 0, 0.3);
+    
+    /* Typography */
+    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    
+    /* Layout */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --header-h: 140px;
+    --footer-h: 70px;
+}
+
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-high);
+    font-family: var(--font-main);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    position: fixed; /* Prevent elastic scrolling */
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background: radial-gradient(circle at 50% 50%, #1a1a1f 0%, #0a0a0c 100%);
+}
+
+/* --- HUD: STATUS BARS & RESOURCES --- */
+header#hud {
+    padding: calc(1rem + var(--safe-top)) 1rem 0.5rem;
+    background: rgba(10, 10, 12, 0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 100;
+}
+
+/* Status Bars */
+.status-bars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--text-med);
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.bar-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px currentColor;
+}
+
+.bar-health { color: var(--health); background-color: var(--health); }
+.bar-water { color: var(--water); background-color: var(--water); }
+.bar-food { color: var(--food); background-color: var(--food); }
+
+/* Resource Counters */
+.resource-grid {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.res-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.res-icon {
+    font-size: 0.8rem;
+    filter: grayscale(1) brightness(1.5);
+}
+
+.res-val {
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--secondary);
+}
+
+/* --- MAIN CONTENT AREA --- */
+main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+/* Sections */
+.view-section {
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.view-section.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RADIO MONITOR (CRT TERMINAL) --- */
+#radio-monitor {
+    background: #000;
+    border: 1px solid var(--secondary);
+    border-radius: 4px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.2), 0 0 10px rgba(0, 255, 65, 0.1);
+}
+
+/* CRT Scanlines Effect */
+#radio-monitor::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+}
+
+#radio-monitor::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 2;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.27861; }
+    5% { opacity: 0.34769; }
+    10% { opacity: 0.23604; }
+    15% { opacity: 0.90626; }
+    /* ... add more steps if needed ... */
+    100% { opacity: 0.3; }
+}
+
+#event-log {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--secondary);
+    height: 100px;
+    overflow-y: auto;
+    text-shadow: 0 0 5px var(--secondary);
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.log-entry {
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+}
+
+.log-entry.danger { color: var(--health); text-shadow: 0 0 5px var(--health); }
+.log-entry.warning { color: var(--primary); text-shadow: 0 0 5px var(--primary); }
+
+/* --- ACTION BUTTONS --- */
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.btn-large {
+    height: 80px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-high);
+    font-family: var(--font-main);
+    font-weight: 900;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-large.explorar { border-color: var(--secondary); color: var(--secondary); }
+.btn-large.huida { border-color: var(--primary); color: var(--primary); }
+
+.btn-large span.label { font-size: 0.6rem; opacity: 0.6; }
+
+.btn-large:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-large.active {
+    background: currentColor;
+    color: #000 !important;
+    box-shadow: 0 0 20px currentColor;
+}
+
+/* --- FOOTER NAVIGATION --- */
+footer {
+    height: calc(var(--footer-h) + var(--safe-bottom));
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding-bottom: var(--safe-bottom);
+}
+
+.nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-low);
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: 0.2s;
+    border: none;
+    background: transparent;
+}
+
+.nav-tab i { font-size: 1.2rem; }
+
+.nav-tab.active {
+    color: var(--primary);
+    border-top: 2px solid var(--primary);
+}
+
+/* --- SPECIFIC VIEWS --- */
+.base-viewport {
+    aspect-ratio: 1/1;
+    background: #000;
+    border: 1px dashed var(--text-low);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-low);
+    position: relative;
+}
+
+#journal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.journal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.journal-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-med);
+    margin-bottom: 0.5rem;
+}
+
+.journal-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-family: var(--font-mono);
+}
+
+.stat-group .val { font-size: 1.2rem; color: var(--primary); }
+.stat-group .unit { font-size: 0.7rem; color: var(--text-low); }
+
+/* Scrollbar Style */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
