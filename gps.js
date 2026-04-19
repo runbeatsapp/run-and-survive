@@ -42,9 +42,9 @@ class GPSManager {
      * Configura el radar visual (Leaflet).
      */
     initMap() {
-        if (this.map || !document.getElementById('map')) return;
+        if (this.map || !document.getElementById('mapa-gps')) return;
 
-        this.map = L.map('map', {
+        this.map = L.map('mapa-gps', {
             zoomControl: false,
             attributionControl: false
         }).setView([0, 0], 2);

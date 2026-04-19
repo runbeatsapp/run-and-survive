@@ -231,22 +231,49 @@ class GameEngine {
             });
         });
 
-        // Action Buttons (Con sistema de pulsación larga para finalizar)
+        // Botones de Inicio de Sesión
         const btnExplorar = document.getElementById('btn-explorar');
         const btnHuida = document.getElementById('btn-huida');
 
-        const setupActionBtn = (btn, mode) => {
+        if (btnExplorar) {
+            btnExplorar.addEventListener('click', () => {
+                if (!this.gps || !this.gps.isActive) {
+                    if (this.gps) this.gps.startTracking('explorar');
+                    this.updateActionButtons(true, 'explorar');
+                }
+            });
+        }
+
+        if (btnHuida) {
+            btnHuida.addEventListener('click', () => {
+                if (!this.gps || !this.gps.isActive) {
+                    if (this.gps) this.gps.startTracking('huida');
+                    this.updateActionButtons(true, 'huida');
+                }
+            });
+        }
+
+        // Controles de Sesión (Pausa y Terminar)
+        const btnPausa = document.getElementById('btn-pausa');
+        const btnTerminar = document.getElementById('btn-terminar');
+
+        if (btnPausa) {
+            btnPausa.addEventListener('click', () => {
+                this.logMessage("⚠️ Sistema de pausa no implementado aún. ¡Sigue moviéndote!", "warning");
+            });
+        }
+
+        if (btnTerminar) {
             let holdTimer;
             const holdDuration = 2000;
 
             const startHold = (e) => {
-                if (btn.classList.contains('active')) {
-                    btn.classList.add('holding');
-                    holdTimer = setTimeout(() => {
-                        if (this.gps) this.gps.stopTracking();
-                        btn.classList.remove('holding');
-                    }, holdDuration);
-                }
+                e.preventDefault(); // Evitar comportamientos por defecto en móviles
+                btnTerminar.classList.add('holding');
+                holdTimer = setTimeout(() => {
+                    if (this.gps) this.gps.stopTracking();
+                    btnTerminar.classList.remove('holding');
+                }, holdDuration);
             };
 
             const cancelHold = () => {
@@ -254,60 +281,37 @@ class GameEngine {
                     clearTimeout(holdTimer);
                     holdTimer = null;
                 }
-                btn.classList.remove('holding');
+                btnTerminar.classList.remove('holding');
             };
 
-            // Eventos de pulsación larga
-            btn.addEventListener('mousedown', startHold);
-            btn.addEventListener('touchstart', startHold);
-            btn.addEventListener('mouseup', cancelHold);
-            btn.addEventListener('mouseleave', cancelHold);
-            btn.addEventListener('touchend', cancelHold);
-
-            // Comportamiento del Clic
-            btn.addEventListener('click', () => {
-                if (!this.gps || !this.gps.isActive) {
-                    // Iniciar sesión
-                    if (this.gps) this.gps.startTracking(mode);
-                    document.getElementById('run-data').style.display = 'block';
-                    this.updateActionButtons(true, mode);
-                } else if (btn.classList.contains('active')) {
-                    // Aviso si se intenta detener con un solo clic
-                    this.logMessage("⚠️ Protocolo de seguridad: Mantén pulsado 2s para finalizar.", "warning");
-                }
+            btnTerminar.addEventListener('mousedown', startHold);
+            btnTerminar.addEventListener('touchstart', startHold);
+            btnTerminar.addEventListener('mouseup', cancelHold);
+            btnTerminar.addEventListener('mouseleave', cancelHold);
+            btnTerminar.addEventListener('touchend', cancelHold);
+            
+            // Clic simple: Feedback para el usuario
+            btnTerminar.addEventListener('click', () => {
+                this.logMessage("⚠️ Mantén pulsado 2s para finalizar la incursión.", "warning");
             });
-        };
-
-        if (btnExplorar) setupActionBtn(btnExplorar, 'explorar');
-        if (btnHuida) setupActionBtn(btnHuida, 'huida');
-
+        }
     }
 
     updateActionButtons(isActive, mode = null) {
+        document.body.classList.toggle('running-active', isActive);
+        
+        const runData = document.getElementById('run-data');
+        if (runData) runData.style.display = isActive ? 'block' : 'none';
+
         const btnExplorar = document.getElementById('btn-explorar');
         const btnHuida = document.getElementById('btn-huida');
 
         if (!isActive) {
-            btnExplorar.classList.remove('active');
-            btnExplorar.innerHTML = `<span class="label">Paso Lento</span>MODO EXPLORADOR`;
-            btnHuida.classList.remove('active');
-            btnHuida.innerHTML = `<span class="label">Sprints / Huida</span>MODO HUIDA`;
+            if (btnExplorar) btnExplorar.classList.remove('active');
+            if (btnHuida) btnHuida.classList.remove('active');
         } else {
-            if (mode === 'explorar') {
-                btnExplorar.classList.add('active');
-                btnExplorar.innerHTML = `DETENER RASTREO`;
-                btnHuida.style.display = 'none';
-            } else {
-                btnHuida.classList.add('active');
-                btnHuida.innerHTML = `DETENER HUIDA`;
-                btnExplorar.style.display = 'none';
-            }
-        }
-
-        // Show/Hide other buttons logic
-        if (!isActive) {
-            btnExplorar.style.display = 'flex';
-            btnHuida.style.display = 'flex';
+            if (mode === 'explorar' && btnExplorar) btnExplorar.classList.add('active');
+            if (mode === 'huida' && btnHuida) btnHuida.classList.add('active');
         }
     }
 }

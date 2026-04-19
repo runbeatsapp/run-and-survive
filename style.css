@@ -274,6 +274,14 @@ main {
     gap: 1rem;
 }
 
+body.running-active .action-buttons {
+    display: none !important;
+}
+
+body.running-active #controles-sesion {
+    display: flex !important;
+}
+
 .btn-large {
     height: 80px;
     border-radius: 8px;
