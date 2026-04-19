@@ -15,8 +15,9 @@ class RunningModule {
      * @param {number} km - Distancia recorrida.
      * @param {string} type - Tipo de sesión ('running' o 'walking').
      * @param {number} time - Tiempo en minutos.
+     * @param {Array} route - Array de coordenadas GPS.
      */
-    processSession(km, type = 'running', time = 0) {
+    processSession(km, type = 'running', time = 0, route = []) {
         const floorKm = Math.floor(km);
         if (km <= 0) {
             const lowMsg = typeof obtenerMensaje !== 'undefined' ? obtenerMensaje('explorador') : "¿Eso es todo? Las cucarachas corren más que tú.";
@@ -82,7 +83,8 @@ class RunningModule {
             distance: km,
             time: time,
             pace: pace,
-            mode: type
+            mode: type,
+            route: route // Guardamos el rastro GPS completo para el mapa futuro
         });
 
         // Actualizar estadísticas globales
@@ -108,6 +110,27 @@ class RunningModule {
 
         // 4. Verificar subida de nivel
         this.checkLevelUp();
+    }
+
+
+    /**
+     * Actualiza las recompensas en tiempo real durante una sesión.
+     */
+    updateLiveSession(km) {
+        const session = this.engine.sesionActual;
+        if (!session) return;
+
+        const floorKm = Math.floor(km);
+        
+        // Calcular recursos acumulados hasta este punto
+        session.recursosGanados = {
+            wood: floorKm * 5,
+            metal: floorKm * 2,
+            scraps: Math.floor(floorKm / 2)
+        };
+
+        // Podríamos disparar eventos de narrativa aquí si se llega a un hito
+        // console.log("🏃 Running-Logica: Recompensas de sesión actualizadas", session.recursosGanados);
     }
 
     /**

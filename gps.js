@@ -24,9 +24,52 @@ class GPSManager {
         };
 
         this.wakeLock = null;
+        this.rutaCoordenadas = []; // Array solicitado por el Arquitecto
+        
+        // --- MAPA LEAFLET ---
+        this.map = null;
+        this.polyline = null;
+        this.marker = null;
 
         console.log("🛰️ GPS-Nativo: Sistema de rastreo inicializado.");
         this.initWakeLockListeners();
+        
+        // Inicializar mapa diferido para asegurar que el div existe
+        setTimeout(() => this.initMap(), 100);
+    }
+
+    /**
+     * Configura el radar visual (Leaflet).
+     */
+    initMap() {
+        if (this.map || !document.getElementById('map')) return;
+
+        this.map = L.map('map', {
+            zoomControl: false,
+            attributionControl: false
+        }).setView([0, 0], 2);
+
+        // Capa de mapa estilo terminal (Dark Matter)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19
+        }).addTo(this.map);
+
+        // Polyline para la ruta (Naranja/Verde según el modo)
+        this.polyline = L.polyline([], {
+            color: '#00ff41',
+            weight: 3,
+            opacity: 0.7,
+            smoothFactor: 1
+        }).addTo(this.map);
+
+        // Marcador del superviviente
+        this.marker = L.circleMarker([0, 0], {
+            radius: 5,
+            fillColor: "#00ff41",
+            color: "#fff",
+            weight: 1,
+            fillOpacity: 1
+        }).addTo(this.map);
     }
 
     /**
@@ -93,9 +136,11 @@ class GPSManager {
     /**
      * Inicia el rastreo de la sesión.
      */
-    async startTracking() {
+    async startTracking(mode = 'explorar') {
         const hasPermission = await this.requestPermission();
         if (!hasPermission) return;
+
+        this.engine.dispatch('START_SESSION', { mode });
 
         this.totalDistance = 0;
         this.lastPosition = null;
@@ -107,6 +152,10 @@ class GPSManager {
             (err) => this.handleError(err),
             this.CONFIG
         );
+
+        // Limpiar ruta anterior
+        this.rutaCoordenadas = [];
+        if (this.polyline) this.polyline.setLatLngs([]);
 
         // Bloquear pantalla para la sesión
         await this.requestWakeLock();
@@ -141,7 +190,8 @@ class GPSManager {
         this.engine.dispatch('PROCESS_SESSION', { 
             km: finalKm, 
             type: type, 
-            time: totalTimeMin 
+            time: totalTimeMin,
+            route: this.rutaCoordenadas // Pasamos el rastro recogido
         });
 
         this.lastPosition = null;
@@ -178,11 +228,40 @@ class GPSManager {
             // 3. Umbral de Movimiento (Eficiencia)
             if (dist >= this.CONFIG.minMoveThreshold) {
                 this.totalDistance += dist;
+                const totalKm = this.totalDistance / 1000;
+                
+                // Actualizar sesión global
+                if (this.engine.sesionActual) {
+                    this.engine.sesionActual.distancia = totalKm;
+                    this.engine.sesionActual.rutaCoordenadas.push({
+                        lat: latitude,
+                        lng: longitude,
+                        timestamp: timestamp
+                    });
+
+                    // Notificar a la lógica para cálculos en tiempo real
+                    this.engine.dispatch('DISTANCE_UPDATE', { km: totalKm });
+                }
+
                 console.log(`🛰️ GPS: +${dist.toFixed(1)}m (Total: ${this.totalDistance.toFixed(1)}m)`);
                 
+                // 4. Guardar en el array del Arquitecto y actualizar mapa
+                this.rutaCoordenadas.push([latitude, longitude]);
+                
+                if (this.polyline) this.polyline.addLatLng([latitude, longitude]);
+                if (this.map) this.map.panTo([latitude, longitude]);
+                if (this.marker) this.marker.setLatLng([latitude, longitude]);
+
                 // Opcional: Notificar al UI en tiempo real
                 this.updateLiveUI();
             }
+        }
+
+        // Primera posición: Centrar mapa
+        if (!this.lastPosition && this.map) {
+            this.map.setView([latitude, longitude], 16);
+            if (this.marker) this.marker.setLatLng([latitude, longitude]);
+            this.rutaCoordenadas.push([latitude, longitude]);
         }
 
         this.lastPosition = { lat: latitude, lng: longitude, time: timestamp };

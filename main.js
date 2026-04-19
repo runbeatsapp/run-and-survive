@@ -13,6 +13,8 @@ class GameEngine {
         if (typeof GPSManager !== 'undefined') this.gps = new GPSManager(this);
         if (typeof BaseModule !== 'undefined') this.base = new BaseModule(this);
 
+        this.sesionActual = null; // Objeto para la carrera activa
+
         this.init();
     }
 
@@ -72,9 +74,19 @@ class GameEngine {
 
     dispatch(action, payload) {
         switch(action) {
+            case 'START_SESSION':
+                this.sesionActual = {
+                    tipoModo: payload.mode, // 'explorar' o 'huida'
+                    recursosGanados: { wood: 0, metal: 0, scraps: 0 },
+                    distancia: 0,
+                    rutaCoordenadas: []
+                };
+                console.log("🎮 Engine: Sesión actual inicializada:", this.sesionActual);
+                break;
             case 'PROCESS_SESSION':
                 if (this.running) this.running.processSession(payload.km, payload.type, payload.time);
-                // Al terminar, ocultar panel de carrera
+                // Al terminar, limpiar sesión y ocultar panel
+                this.sesionActual = null;
                 document.getElementById('run-data').style.display = 'none';
                 this.updateActionButtons(false);
                 break;
@@ -86,6 +98,9 @@ class GameEngine {
                 break;
             case 'CONSTRUCT_BUILDING':
                 if (this.base) this.base.construirEdificio(payload.id);
+                break;
+            case 'DISTANCE_UPDATE':
+                if (this.running) this.running.updateLiveSession(payload.km);
                 break;
         }
 
@@ -216,25 +231,56 @@ class GameEngine {
             });
         });
 
-        // Action Buttons
+        // Action Buttons (Con sistema de pulsación larga para finalizar)
         const btnExplorar = document.getElementById('btn-explorar');
         const btnHuida = document.getElementById('btn-huida');
 
-        const toggleGPS = (mode) => {
-            if (!this.gps) return;
+        const setupActionBtn = (btn, mode) => {
+            let holdTimer;
+            const holdDuration = 2000;
 
-            if (this.gps.isActive) {
-                this.gps.stopTracking();
-                this.updateActionButtons(false);
-            } else {
-                this.gps.startTracking();
-                document.getElementById('run-data').style.display = 'block';
-                this.updateActionButtons(true, mode);
-            }
+            const startHold = (e) => {
+                if (btn.classList.contains('active')) {
+                    btn.classList.add('holding');
+                    holdTimer = setTimeout(() => {
+                        if (this.gps) this.gps.stopTracking();
+                        btn.classList.remove('holding');
+                    }, holdDuration);
+                }
+            };
+
+            const cancelHold = () => {
+                if (holdTimer) {
+                    clearTimeout(holdTimer);
+                    holdTimer = null;
+                }
+                btn.classList.remove('holding');
+            };
+
+            // Eventos de pulsación larga
+            btn.addEventListener('mousedown', startHold);
+            btn.addEventListener('touchstart', startHold);
+            btn.addEventListener('mouseup', cancelHold);
+            btn.addEventListener('mouseleave', cancelHold);
+            btn.addEventListener('touchend', cancelHold);
+
+            // Comportamiento del Clic
+            btn.addEventListener('click', () => {
+                if (!this.gps || !this.gps.isActive) {
+                    // Iniciar sesión
+                    if (this.gps) this.gps.startTracking(mode);
+                    document.getElementById('run-data').style.display = 'block';
+                    this.updateActionButtons(true, mode);
+                } else if (btn.classList.contains('active')) {
+                    // Aviso si se intenta detener con un solo clic
+                    this.logMessage("⚠️ Protocolo de seguridad: Mantén pulsado 2s para finalizar.", "warning");
+                }
+            });
         };
 
-        if (btnExplorar) btnExplorar.addEventListener('click', () => toggleGPS('explorar'));
-        if (btnHuida) btnHuida.addEventListener('click', () => toggleGPS('huida'));
+        if (btnExplorar) setupActionBtn(btnExplorar, 'explorar');
+        if (btnHuida) setupActionBtn(btnHuida, 'huida');
+
     }
 
     updateActionButtons(isActive, mode = null) {
